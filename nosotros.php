@@ -6,6 +6,6 @@
         <hr class="my-2">
     </div>
 
-<?php ("template/pie.php"); ?>
+<?php ('template/pie.php'); ?>
 
 
