@@ -11,12 +11,33 @@
         case "Agregar":
             $sentenciaSQL = $conexion->prepare("INSERT INTO libros(nombre, imagen) VALUES(:nombre,:imagen);");
             $sentenciaSQL->bindParam(':nombre',$txtNombre);
-            $sentenciaSQL->bindParam(':imagen',$txtImagen);
+
+            $fecha = new DateTime();
+            $nombreArchivo = ($txtImagen!="")?$fecha->getTimestamp()."_".$_FILES["txtImagen"]["name"]:"imagen.jpg";
+
+            $tmpImagen = $_FILES["txtImagen"]["tmp_name"];
+
+            if($tmpImagen!=""){
+                move_uploaded_file($tmpImagen,"../../img/".$nombreArchivo);
+            }
+
+            $sentenciaSQL->bindParam(':imagen',$nombreArchivo);
             $sentenciaSQL->execute();
             break;
 
         case "Modificar":
-            echo"Presionado botón Modificar";
+            $sentenciaSQL = $conexion->prepare("UPDATE libros SET nombre=:nombre WHERE id=:id");
+            $sentenciaSQL->bindParam(':nombre',$txtNombre);
+            $sentenciaSQL->bindParam(':id',$txtID);
+            $sentenciaSQL->execute();
+
+            if($txtImagen!=""){
+                $sentenciaSQL = $conexion->prepare("UPDATE libros SET imagen=:imagen WHERE id=:id");
+                $sentenciaSQL->bindParam(':imagen',$txtImagen);
+                $sentenciaSQL->bindParam(':id',$txtID);
+                $sentenciaSQL->execute();
+            }
+
             break;
 
         case "Cancelar":
@@ -24,13 +45,31 @@
             break;
 
         case "Seleccionar":
-            echo"Presionado botón Seleccionar";
+            $sentenciaSQL = $conexion->prepare("SELECT * FROM libros WHERE id=:id");
+            $sentenciaSQL->bindParam(':id',$txtID);
+            $sentenciaSQL->execute();
+            $libro = $sentenciaSQL->fetch(PDO::FETCH_LAZY);
+            $txtNombre = $libro['nombre'];
+            $txtImagen = $libro['imagen'];
             break;
 
         case "Eliminar":
+
+            $sentenciaSQL = $conexion->prepare("SELECT imagen FROM libros WHERE id=:id");
+            $sentenciaSQL->bindParam(':id',$txtID);
+            $sentenciaSQL->execute();
+            $libro = $sentenciaSQL->fetch(PDO::FETCH_LAZY);
+
+            if(isset($libro["imagen"]) && ($libro["imagen"]!="imagen.jpg")){
+                if(file_exists("../../img/".$libro["imagen"])){
+                    unlink("../../img/".$libro["imagen"]);
+                }
+            }
+
             $sentenciaSQL = $conexion->prepare("DELETE FROM libros WHERE id=:id");
             $sentenciaSQL->bindParam(':id',$txtID);
             $sentenciaSQL->execute();
+            
             break;
     }
     $sentenciaSQL = $conexion->prepare("SELECT * FROM libros");
@@ -49,17 +88,18 @@
                 <form method="post" enctype="multipart/form-data">
                     <div class="form-group">
                         <label for="$txtID">ID: </label>
-                        <input id="$txtID" type="text" class="form-control" name="txtID" placeholder="ID" required>
+                        <input id="$txtID" type="text" class="form-control" name="txtID" placeholder="ID" value="<?php echo $txtID;?>" />
                     </div>
 
                     <div class="form-group">
                         <label for="txtNombre">Nombre: </label>
-                        <input id="txtNombre" type="text" class="form-control" name="txtNombre" placeholder="Nombre" required>
+                        <input id="txtNombre" type="text" class="form-control" name="txtNombre" placeholder="Nombre" value="<?php echo $txtNombre;?>" />
                     </div>
 
                     <div class="form-group">
                         <label for="txtImagen">Imagen: </label>
-                        <input id="txtImagen" type="file" class="form-control" name="txtImagen" placeholder="Imagen" required>
+                        <?php echo $txtImagen;?>
+                        <input id="txtImagen" type="file" class="form-control" name="txtImagen" placeholder="Imagen" />
                     </div>
 
                     <div class="btn-group" role="group" aria-label="">
@@ -90,7 +130,7 @@
                 <td><?php echo $libro['id'];?></td>
                 <td><?php echo $libro['nombre'];?></td>
                 <td><?php echo $libro['imagen'];?></td>
-                <td>SELECCIONAR / BORRAR
+                <td>
 
                     <form method="post">
                         <input type="hidden" name="txtID" id="txtID" value="<?php echo $libro['id'];?>" />
