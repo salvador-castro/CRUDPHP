@@ -32,6 +32,13 @@
             $sentenciaSQL->execute();
 
             if($txtImagen!=""){
+
+                $fecha = new DateTime();
+                $nombreArchivo = ($txtImagen!="")?$fecha->getTimestamp()."_".$_FILES["txtImagen"]["name"]:"imagen.jpg";
+                $tmpImagen = $_FILES["txtImagen"]["tmp_name"];
+                
+                move_uploaded_file($tmpImagen,"../../img/".$nombreArchivo);
+
                 $sentenciaSQL = $conexion->prepare("UPDATE libros SET imagen=:imagen WHERE id=:id");
                 $sentenciaSQL->bindParam(':imagen',$txtImagen);
                 $sentenciaSQL->bindParam(':id',$txtID);
