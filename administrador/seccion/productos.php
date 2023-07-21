@@ -23,6 +23,8 @@
 
             $sentenciaSQL->bindParam(':imagen',$nombreArchivo);
             $sentenciaSQL->execute();
+
+            header("Location:productos.php");
             break;
 
         case "Modificar":
@@ -57,10 +59,12 @@
                 $sentenciaSQL->execute();
             }
 
+            header("Location:productos.php");
+
             break;
 
         case "Cancelar":
-            echo"Presionado botón Cancelar";
+            header("Location:productos.php");
             break;
 
         case "Seleccionar":
@@ -89,6 +93,8 @@
             $sentenciaSQL->bindParam(':id',$txtID);
             $sentenciaSQL->execute();
 
+            header("Location:productos.php");
+
             break;
     }
     $sentenciaSQL = $conexion->prepare("SELECT * FROM libros");
@@ -107,24 +113,31 @@
                 <form method="post" enctype="multipart/form-data">
                     <div class="form-group">
                         <label for="$txtID">ID: </label>
-                        <input id="$txtID" type="text" class="form-control" name="txtID" placeholder="ID" value="<?php echo $txtID;?>" />
+                        <input id="$txtID" type="text" class="form-control" name="txtID" placeholder="ID" required readonly value="<?php echo $txtID;?>" />
                     </div>
 
                     <div class="form-group">
                         <label for="txtNombre">Nombre: </label>
-                        <input id="txtNombre" type="text" class="form-control" name="txtNombre" placeholder="Nombre" value="<?php echo $txtNombre;?>" />
+                        <input id="txtNombre" type="text" class="form-control" name="txtNombre" placeholder="Nombre" required value="<?php echo $txtNombre;?>" />
                     </div>
 
                     <div class="form-group">
                         <label for="txtImagen">Imagen: </label>
-                        <?php echo $txtImagen;?>
+                        <br />
+                        <?php if($txtImagen!="")
+                        {
+                            ?>
+                            <img class="img-thumbnail rounded" src="../../img/<?php echo $txtImagen;?>" width="100" alt="" srcset="">
+                            <?php
+                        }
+                        ?>
                         <input id="txtImagen" type="file" class="form-control" name="txtImagen" placeholder="Imagen" />
                     </div>
 
                     <div class="btn-group" role="group" aria-label="">
-                        <button type="submit" name="accion" value="Agregar" class="btn btn-success">Agregar</button>
-                        <button type="submit" name="accion" value="Modificar" class="btn btn-warning">Modificar</button>
-                        <button type="submit" name="accion" value="Cancelar" class="btn btn-info">Cancelar</button>
+                        <button type="submit" name="accion" <?php echo ($accion=="Seleccionar")?"disabled":""; ?> value="Agregar" class="btn btn-success">Agregar</button>
+                        <button type="submit" name="accion" <?php echo ($accion!="Seleccionar")?"disabled":""; ?> value="Modificar" class="btn btn-warning">Modificar</button>
+                        <button type="submit" name="accion" <?php echo ($accion!="Seleccionar")?"disabled":""; ?> value="Cancelar" class="btn btn-info">Cancelar</button>
                     </div>
                 </form>
             </div>
@@ -148,7 +161,7 @@
             <tr>
                 <td><?php echo $libro['id'];?></td>
                 <td><?php echo $libro['nombre'];?></td>
-                <td><?php echo $libro['imagen'];?></td>
+                <td><img class="img-thumbnail rounded" src="../../img/<?php echo $libro['imagen'];?>" width="50" alt="" srcset=""></td>
                 <td>
 
                     <form method="post">
